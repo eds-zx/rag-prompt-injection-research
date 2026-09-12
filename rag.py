@@ -2,14 +2,25 @@ import os
 
 import chromadb
 import ollama
+from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 documents = {}
 
 for filename in os.listdir("Documents"):
+    path = os.path.join("Documents", filename)
+
     if filename.endswith(".txt"):
-        with open(os.path.join("Documents", filename), "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             documents[filename] = f.read()
+
+    elif filename.endswith(".html"):
+        with open(path, "r", encoding="utf-8") as f:
+            soup = BeautifulSoup(f.read(), "html.parser")
+        # Naive/permissive on purpose: pulls all text regardless of
+        # display:none, hidden attributes, etc, mirroring how a lot of
+        # real-world RAG ingestion pipelines actually extract HTML text.
+        documents[filename] = soup.get_text(separator="\n")
 
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 
@@ -26,6 +37,10 @@ for filename, count in chunk_counts.items():
     print(f"{filename}: {count} chunks")
 
 client = chromadb.PersistentClient(path="chroma_db")
+try:
+    client.delete_collection(name="documents")
+except Exception:
+    pass
 collection = client.get_or_create_collection(name="documents")
 
 collection.add(
@@ -48,6 +63,7 @@ def retrieve(question, n_results=3):
 def generate_answer(question):
     matches = retrieve(question, n_results=3)
     context = "\n\n".join(match["text"] for match in matches)
+    print("\n[DEBUG] Context sent to model:\n" + context + "\n")
 
     prompt = f"""Answer the question using only the context below.
 
@@ -71,3 +87,4 @@ while True:
     answer = generate_answer(question)
     print(f"\n--- Answer for: {question!r} ---")
     print(answer)
+
