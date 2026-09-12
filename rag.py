@@ -45,16 +45,6 @@ def retrieve(question, n_results=3):
     ]
 
 
-test_question = "What's the recipe for pasta carbonara?"
-matches = retrieve(test_question)
-
-print(f"\n--- Results for: {test_question!r} ---")
-for match in matches:
-    print(f"[{match['filename']}]")
-    print(match["text"])
-    print()
-
-
 def generate_answer(question):
     matches = retrieve(question, n_results=3)
     context = "\n\n".join(match["text"] for match in matches)
@@ -73,6 +63,11 @@ Question: {question}"""
     return response["message"]["content"]
 
 
-answer = generate_answer(test_question)
-print(f"\n--- Answer for: {test_question!r} ---")
-print(answer)
+while True:
+    question = input("\nAsk a question (or type 'exit'/'quit' to stop): ")
+    if question.strip().lower() in ("exit", "quit"):
+        break
+
+    answer = generate_answer(question)
+    print(f"\n--- Answer for: {question!r} ---")
+    print(answer)
