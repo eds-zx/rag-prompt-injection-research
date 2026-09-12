@@ -41,13 +41,13 @@ For each vector that works, document what would have stopped it: content sanitiz
 - Optional: short demo video or blog post for portfolio/YouTube
 
 ## Build phases
-1. Build the clean RAG target, verify it works normally first (no security angle yet)
+1. ~~Build the clean RAG target, verify it works normally first (no security angle yet)~~ — **Done.** Document loading, chunking (RecursiveCharacterTextSplitter), embedding + storage (Chroma), retrieval, generation (Ollama/llama3.1), and a CLI loop are all built and verified, including correct behavior on irrelevant queries.
 2. Build 2-3 payloads per category, get the harness working end to end
 3. Expand corpus once harness is proven
 4. Write up findings and mitigations
 5. Polish repo + README last
 
-## Technical build steps (v1, no attack logic yet)
+## Technical build steps (v1, no attack logic yet) — complete
 1. **Environment** — Python, install Ollama and pull a model (`ollama pull llama3.1`), create project folder + venv, install langchain/llama-index, chromadb, Ollama Python client
 2. **Load documents** — pick a handful of text files/PDFs, script to read content into memory
 3. **Chunk documents** — split into paragraph-sized pieces (use a library splitter, not custom)
@@ -55,8 +55,6 @@ For each vector that works, document what would have stopped it: content sanitiz
 5. **Retrieval** — function that takes a question, embeds it the same way, queries Chroma for nearest chunks
 6. **Generation** — combine retrieved chunks + question into a prompt template, send to Ollama, print answer
 7. **Usable loop** — simple CLI loop: ask, answer, repeat
-
-Steps 5 and 6 are the ones actually new to me — everything after is variations on "hide text, test, record."
 
 ## v2 (later, not now)
 Wire in an agent with tool access — this is where indirect injection gets more dangerous (tool outputs, not just chat responses) and connects to the agents interest.
