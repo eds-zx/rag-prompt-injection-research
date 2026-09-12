@@ -1,5 +1,6 @@
 import os
 
+import chromadb
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 documents = {}
@@ -23,6 +24,13 @@ for chunk in chunks:
 for filename, count in chunk_counts.items():
     print(f"{filename}: {count} chunks")
 
-print("\n--- Sample chunk ---")
-print(chunks[0]["filename"])
-print(chunks[0]["text"])
+client = chromadb.PersistentClient(path="chroma_db")
+collection = client.get_or_create_collection(name="documents")
+
+collection.add(
+    ids=[f"chunk_{i}" for i in range(len(chunks))],
+    documents=[chunk["text"] for chunk in chunks],
+    metadatas=[{"filename": chunk["filename"]} for chunk in chunks],
+)
+
+print(f"\nTotal chunks stored in collection: {collection.count()}")
