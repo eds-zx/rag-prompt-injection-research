@@ -4,6 +4,7 @@ import chromadb
 import ollama
 from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pypdf import PdfReader
 
 documents = {}
 
@@ -21,6 +22,21 @@ for filename in os.listdir("Documents"):
         # display:none, hidden attributes, etc, mirroring how a lot of
         # real-world RAG ingestion pipelines actually extract HTML text.
         documents[filename] = soup.get_text(separator="\n")
+
+    elif filename.endswith(".pdf"):
+        reader = PdfReader(path)
+        metadata = reader.metadata or {}
+        # Naive/permissive on purpose: metadata fields (Title, Author,
+        # Subject) are concatenated in with the page text and chunked
+        # identically, mirroring real-world pipelines that don't
+        # distinguish document metadata from trusted body content.
+        metadata_text = "\n".join(
+            str(metadata[field])
+            for field in ("/Title", "/Author", "/Subject")
+            if metadata.get(field)
+        )
+        page_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        documents[filename] = metadata_text + "\n" + page_text
 
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 
