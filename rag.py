@@ -45,13 +45,6 @@ for filename, content in documents.items():
     for chunk in splitter.split_text(content):
         chunks.append({"filename": filename, "text": chunk})
 
-# TEMP DEBUG
-for chunk in chunks:
-    if chunk["filename"] == "catalonia_zw.txt":
-        print(f"chunk length: {len(chunk['text'])}")
-        print(repr(chunk["text"]))
-        print("---")
-
 chunk_counts = {}
 for chunk in chunks:
     chunk_counts[chunk["filename"]] = chunk_counts.get(chunk["filename"], 0) + 1
